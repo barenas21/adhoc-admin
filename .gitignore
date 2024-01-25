@@ -1,2 +1,5 @@
-./env
-./adhoc_admin/.env
+.env
+.venv
+env/
+venv/
+ENV/
