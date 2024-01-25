@@ -1,0 +1,5 @@
+slack_sdk==3.26.2
+jira==3.6.0
+requests==2.31.0
+flask==3.0.1
+flake8==7.0.0
