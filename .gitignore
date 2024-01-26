@@ -1,5 +1,85 @@
-.env
-.venv
+# Virtual environment directory
 env/
 venv/
-ENV/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Compiled files
+*.so
+
+# Package directories (if these are installed packages and not part of your project)
+.flaskenv/
+werkzeug/
+click/
+itsdangerous/
+MarkupSafe/
+Jinja2/
+zipp/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# User-specific files
+*.swp
+*.swo
+*.sublime*
+
+# IDE/Editor specific files
+.vscode/
+.idea/
+
+# Local configuration files
+.env
+.pyenv
+
+# Log files
+*.log
+
+# Database files
+*.sqlite
+*.sqlite3
+*.sqlite3-journal
+
+# Test reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
