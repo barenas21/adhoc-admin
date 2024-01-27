@@ -5,7 +5,7 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk import WebClient  # Import WebClient here
 from slack_sdk.errors import SlackApiError
 from dotenv import load_dotenv
-from jira import JIRA
+from jira import JIRA, JIRAError
 
 
 # Load environment variables
@@ -95,6 +95,37 @@ def open_modal(client: WebClient, trigger_id: str, channel_id: str,logger):
 
 request_counter = 0
 
+def get_slack_user_info(user_id, client, logger):
+    try:
+        response = client.users_info(user=user_id)
+        if response["ok"]:
+            user_info = response["user"]
+            # Extract the necessary details, e.g., user's real name or email
+            user_name = user_info.get("real_name") or user_info.get("name")
+            return user_name
+    except SlackApiError as e:
+        logger.error(f"Error fetching user info from Slack: {e}")
+        return None
+
+def get_slack_user_email(user_id, client, logger):
+    try:
+        response = client.users_info(user=user_id)
+        if response["ok"]:
+            user_info = response["user"]
+            return user_info.get("profile", {}).get("email")
+    except SlackApiError as e:
+        # Assuming you have a logger set up
+        logger.error(f"Error fetching user info from Slack: {e}")
+        return None
+
+def map_email_to_jira_username(email):
+    # Split the email at '@' and then split the first part at '.'
+    parts = email.split('@')[0].split('.')
+    # Concatenate the first name and last name with a period between them
+    jira_username = parts[0] + '.' + parts[1]
+    return jira_username
+
+
 @app.view("modal-identifier")
 def handle_modal_submission(ack, body, client, logger):
     global request_counter
@@ -103,6 +134,10 @@ def handle_modal_submission(ack, body, client, logger):
     channel_id = body['view']['private_metadata']  # Retrieve the channel ID from private metadata
 
     # Extract submission data
+    user_id = body["user"]["id"]
+    slack_user_name = get_slack_user_info(user_id, client, logger)
+    slack_user_email = get_slack_user_email(user_id, client, logger)
+    jira_username = map_email_to_jira_username(slack_user_email)
     submission = body['view']['state']['values']
     request_text = submission['request_block']['request']['value']
     urgency = submission['urgency_block']['urgency']['selected_option']['value']
@@ -127,12 +162,19 @@ def handle_modal_submission(ack, body, client, logger):
         'project': {'key': 'SAK'},
         'summary': f"New Request from Slack: {request_text}",
         'description': f"Urgency: {urgency}\nBusiness Impact: {business_impact}",
+        'reporter': {'name': jira_username},
         'customfield_10032': {'value': urgency} if urgency else None,
         'customfield_10033': business_impact,
         'customfield_10036': request_id,
         'issuetype': {'name': 'Task'},
     }
-    new_issue = jira_client.create_issue(fields=issue_dict)
+    try:
+        new_issue = jira_client.create_issue(fields=issue_dict)
+        # Handle success (e.g., log the issue creation, inform the user, etc.)
+    except JIRAError as e:
+        logger.error(f"Error creating Jira issue: {e}")
+        # Handle the error (e.g., send a message back to the user)
+
 
 @app.command("/request")
 def handle_command(ack, body, client, logger):
