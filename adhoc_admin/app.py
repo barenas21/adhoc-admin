@@ -1,6 +1,8 @@
 import os
 
+from dotenv import load_dotenv
 from slack_bolt import App
+
 
 # Initializes your app with your bot token and signing secret
 app = App(
