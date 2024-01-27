@@ -5,12 +5,18 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk import WebClient  # Import WebClient here
 from slack_sdk.errors import SlackApiError
 from dotenv import load_dotenv
+from jira import JIRA
+
 
 # Load environment variables
 load_dotenv()
 
 # Initializes your app with your bot token
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
+
+# Initializes the Jira client
+jira_options = {'server': os.environ.get("JIRA_SERVER")}
+jira_client = JIRA(options=jira_options, basic_auth=(os.environ.get("JIRA_USER_EMAIL"), os.environ.get("JIRA_API_TOKEN")))
 
 @app.message(":wave:")
 def say_hello(message, say):
@@ -115,6 +121,18 @@ def handle_modal_submission(ack, body, client, logger):
         )
     except SlackApiError as e:
         logger.error(f"Error posting message: {e}")
+
+    # Create a Jira issue
+    issue_dict = {
+        'project': {'key': 'SAK'},
+        'summary': f"New Request from Slack: {request_text}",
+        'description': f"Urgency: {urgency}\nBusiness Impact: {business_impact}",
+        'customfield_10032': {'value': urgency} if urgency else None,
+        'customfield_10033': business_impact,
+        'customfield_10036': request_id,
+        'issuetype': {'name': 'Task'},
+    }
+    new_issue = jira_client.create_issue(fields=issue_dict)
 
 @app.command("/request")
 def handle_command(ack, body, client, logger):
