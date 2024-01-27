@@ -18,4 +18,4 @@ def handle_adhoc_admin(ack, body, logger):
 
 # Start your app
 if __name__ == "__main__":
-    app.start(port=int(os.environ.get("PORT", 3000)))
+    app.start(port=int(os.environ.get("PORT", 80)))
