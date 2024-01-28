@@ -7,3 +7,4 @@ slack_bolt==1.18.1
 black==23.12.1
 responses==0.24.1
 python-dotenv==1.0.1
+pytest==8.0.0
