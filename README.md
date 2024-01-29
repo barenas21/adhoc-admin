@@ -29,6 +29,13 @@ This is a repo for the adhoc-admin app that will help engineers properly queue u
 
 Set up your Jira Kanban board and create custom fields for an urgency dropdown and a business impact paragraph field.
 
+# set up Jira app in Slack and connect channel
+
+- Add the Jira app to your Slack workspace.
+- Run '/jira connect' and connect it to the appropriate Slack project.
+
+This will make your request summary look nice.
+
 # code breakdown
 
 ## Initialization and Configuration:
