@@ -156,11 +156,9 @@ def handle_modal_submission(ack, body, client, logger):
     user_id = body["user"]["id"]
     jira_priority = map_urgency_to_jira_priority(urgency)
 
-
     # Generate and format request ID
     request_counter = (request_counter + 1) % 1000
     request_id = f"{request_counter:03}"
-
 
     # Create a Jira issue
     issue_dict = {
