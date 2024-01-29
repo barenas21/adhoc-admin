@@ -8,6 +8,7 @@ from app import app
 
 class TestSlackApp(unittest.TestCase):
 
+
     @responses.activate
     def test_handle_command(self):
         # Mock the environment variables that your app needs
@@ -46,6 +47,7 @@ class TestSlackApp(unittest.TestCase):
 
             # Assert that the logger was called with the fake_body
             mock_logger.info.assert_called_with(fake_body)
+
 
 if __name__ == "__main__":
     unittest.main()
