@@ -18,11 +18,6 @@ app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
 jira_options = {'server': os.environ.get("JIRA_SERVER")}
 jira_client = JIRA(options=jira_options, basic_auth=(os.environ.get("JIRA_USER_EMAIL"), os.environ.get("JIRA_API_TOKEN")))
 
-@app.message(":wave:")
-def say_hello(message, say):
-    user = message['user']
-    say(f"Hi there, <@{user}>!")
-
 @app.event("app_mention")
 def handle_app_mention_events(body, logger):
     logger.info(body)
@@ -66,15 +61,15 @@ def open_modal(client: WebClient, trigger_id: str, channel_id: str,logger):
                         "action_id": "urgency",
                         "options": [
                             {
-                                "text": {"type": "plain_text", "text": "P1 - High urgency"},
+                                "text": {"type": "plain_text", "text": "P1 - Consider opening an incident"},
                                 "value": "P1"
                             },
                             {
-                                "text": {"type": "plain_text", "text": "P2 - Medium urgency"},
+                                "text": {"type": "plain_text", "text": "P2 - Need to be unblocked < 4h"},
                                 "value": "P2"
                             },
                             {
-                                "text": {"type": "plain_text", "text": "P3 - Low urgency"},
+                                "text": {"type": "plain_text", "text": "P3 - Not urgent"},
                                 "value": "P3"
                             }
                         ]
@@ -125,6 +120,13 @@ def map_email_to_jira_username(email):
     jira_username = parts[0] + '.' + parts[1]
     return jira_username
 
+def map_urgency_to_jira_priority(urgency):
+    mapping = {
+        "P1": "High",
+        "P2": "Medium",
+        "P3": "Low"
+    }
+    return mapping.get(urgency, "Low")  # Default to Low if no match found
 
 @app.view("modal-identifier")
 def handle_modal_submission(ack, body, client, logger):
@@ -143,6 +145,8 @@ def handle_modal_submission(ack, body, client, logger):
     urgency = submission['urgency_block']['urgency']['selected_option']['value']
     business_impact = submission['impact_block']['business_impact']['value']
     user_id = body["user"]["id"]
+    jira_priority = map_urgency_to_jira_priority(urgency)
+
 
     # Generate and format request ID
     request_counter = (request_counter + 1) % 1000
@@ -152,7 +156,7 @@ def handle_modal_submission(ack, body, client, logger):
     try:
         client.chat_postMessage(
             channel=channel_id,  # Use the captured channel ID
-            text=f"Request ID: {request_id}\nUser: <@{user_id}>\nRequest: {request_text}\nUrgency: {urgency}\nBusiness Impact: {business_impact}"
+            text=f"*Request ID*: {request_id}\n*User*: <@{user_id}>\n*Request*: {request_text}\n*Urgency*: {urgency}\n*Business Impact*: {business_impact}"
         )
     except SlackApiError as e:
         logger.error(f"Error posting message: {e}")
@@ -161,8 +165,8 @@ def handle_modal_submission(ack, body, client, logger):
     issue_dict = {
         'project': {'key': 'SAK'},
         'summary': f"New Request from Slack: {request_text}",
-        'description': f"Urgency: {urgency}\nBusiness Impact: {business_impact}",
-        'reporter': {'name': jira_username},
+        # 'reporter': {'name': jira_username}, #TODO: need to test this in Virta workspace to see if it works
+        'priority': {'name': jira_priority},
         'customfield_10032': {'value': urgency} if urgency else None,
         'customfield_10033': business_impact,
         'customfield_10036': request_id,
@@ -173,19 +177,7 @@ def handle_modal_submission(ack, body, client, logger):
         # Handle success (e.g., log the issue creation, inform the user, etc.)
     except JIRAError as e:
         logger.error(f"Error creating Jira issue: {e}")
-        # Handle the error (e.g., send a message back to the user)
-
-
-@app.command("/request")
-def handle_command(ack, body, client, logger):
-    try:
-        ack()
-        channel_id = body['channel_id']  # Capture the channel ID
-        trigger_id = body['trigger_id']
-        open_modal(client, trigger_id, channel_id, logger) # Listens to incoming commands via "request"
-        logger.info(body)
-    except Exception as e:
-        logger.error(f"Error handling slash command: {e}")
+        # Handle the error (e.g., send a message back to the user)   
 
 # Start the app in Socket Mode
 if __name__ == "__main__":
