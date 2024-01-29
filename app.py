@@ -17,6 +17,7 @@ app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
 jira_options = {'server': os.environ.get("JIRA_SERVER")}
 jira_client = JIRA(options=jira_options, basic_auth=(os.environ.get("JIRA_USER_EMAIL"), os.environ.get("JIRA_API_TOKEN")))
 
+jira_project = os.environ.get("JIRA_PROJECT")
 
 @app.event("app_mention")
 def handle_app_mention_events(body, logger):
@@ -162,7 +163,7 @@ def handle_modal_submission(ack, body, client, logger):
 
     # Create a Jira issue
     issue_dict = {
-        'project': {'key': os.environ.get("JIRA_PROJECT")},
+        'project': {'key': jira_project},
         'summary': request_text,
         # 'reporter': {'name': jira_username}, #TODO: need to test this in Virta workspace to see if it works
         'priority': {'name': jira_priority},
