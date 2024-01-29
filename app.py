@@ -174,7 +174,7 @@ def handle_modal_submission(ack, body, client, logger):
     }
     try:
         new_issue = jira_client.create_issue(fields=issue_dict)
-        
+
         # Getting the URL of the created Jira issue
         jira_issue_url = new_issue.permalink()
 
