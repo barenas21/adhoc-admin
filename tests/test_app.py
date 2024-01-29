@@ -3,6 +3,12 @@ import unittest
 from unittest.mock import patch, Mock
 import responses
 
+# Set up mock environment variables
+os.environ["SLACK_BOT_TOKEN"] = "fake-token"
+os.environ["JIRA_SERVER"] = "https://fake-jira-server.com"
+os.environ["JIRA_USER_EMAIL"] = "fake-email@example.com"
+os.environ["JIRA_API_TOKEN"] = "fake-jira-api-token"
+
 # Import the file/module that you want to test
 from app import app
 
