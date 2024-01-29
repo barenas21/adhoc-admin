@@ -1,5 +1,4 @@
 import os
-import re
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk import WebClient  # Import WebClient here
@@ -18,13 +17,16 @@ app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
 jira_options = {'server': os.environ.get("JIRA_SERVER")}
 jira_client = JIRA(options=jira_options, basic_auth=(os.environ.get("JIRA_USER_EMAIL"), os.environ.get("JIRA_API_TOKEN")))
 
+
 @app.event("app_mention")
 def handle_app_mention_events(body, logger):
     logger.info(body)
 
+
 @app.event("message")
 def handle_message_events(body, logger):
     logger.info(body)
+
 
 @app.command("/request")
 def handle_command(ack, body, client, logger):
@@ -32,12 +34,13 @@ def handle_command(ack, body, client, logger):
         ack()
         channel_id = body['channel_id']  # Capture the channel ID
         trigger_id = body['trigger_id']
-        open_modal(client, trigger_id, channel_id, logger) # Listens to incoming commands via "request"
+        open_modal(client, trigger_id, channel_id, logger)  # Listens to incoming commands via "request"
         logger.info(body)
     except Exception as e:
         logger.error(f"Error handling slash command: {e}")
 
-def open_modal(client: WebClient, trigger_id: str, channel_id: str,logger):
+
+def open_modal(client: WebClient, trigger_id: str, channel_id: str, logger):
     try:
         # Define the modal
         modal = {
@@ -88,7 +91,9 @@ def open_modal(client: WebClient, trigger_id: str, channel_id: str,logger):
     except SlackApiError as e:
         logger.error(f"Error opening modal: {e}")
 
+
 request_counter = 0
+
 
 def get_slack_user_info(user_id, client, logger):
     try:
@@ -102,6 +107,7 @@ def get_slack_user_info(user_id, client, logger):
         logger.error(f"Error fetching user info from Slack: {e}")
         return None
 
+
 def get_slack_user_email(user_id, client, logger):
     try:
         response = client.users_info(user=user_id)
@@ -113,12 +119,14 @@ def get_slack_user_email(user_id, client, logger):
         logger.error(f"Error fetching user info from Slack: {e}")
         return None
 
+
 def map_email_to_jira_username(email):
     # Split the email at '@' and then split the first part at '.'
     parts = email.split('@')[0].split('.')
     # Concatenate the first name and last name with a period between them
     jira_username = parts[0] + '.' + parts[1]
     return jira_username
+
 
 def map_urgency_to_jira_priority(urgency):
     mapping = {
@@ -127,6 +135,7 @@ def map_urgency_to_jira_priority(urgency):
         "P3": "Low"
     }
     return mapping.get(urgency, "Low")  # Default to Low if no match found
+
 
 @app.view("modal-identifier")
 def handle_modal_submission(ack, body, client, logger):
@@ -184,7 +193,6 @@ def handle_modal_submission(ack, body, client, logger):
         logger.error(f"Error creating Jira issue: {e}")
         # Handle the error (e.g., send a message back to the user)   
 
-    
 
 # Start the app in Socket Mode
 if __name__ == "__main__":
