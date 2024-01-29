@@ -6,7 +6,7 @@ from slack_sdk import WebClient  # Import WebClient here
 from slack_sdk.errors import SlackApiError
 from dotenv import load_dotenv
 from jira import JIRA, JIRAError
-
+from jira.resources import Issue
 
 # Load environment variables
 load_dotenv()
@@ -152,14 +152,6 @@ def handle_modal_submission(ack, body, client, logger):
     request_counter = (request_counter + 1) % 1000
     request_id = f"{request_counter:03}"
 
-    # Post the summary message to the same channel where the command was issued
-    try:
-        client.chat_postMessage(
-            channel=channel_id,  # Use the captured channel ID
-            text=f"Thank you for submitting your request! We'll get back to you as soon as possible. Your Request ID is {request_id}. \n\n*User*: <@{user_id}>\n*Request*: {request_text}\n*Urgency*: {urgency}\n*Business Impact*: {business_impact}"
-        )
-    except SlackApiError as e:
-        logger.error(f"Error posting message: {e}")
 
     # Create a Jira issue
     issue_dict = {
@@ -175,10 +167,24 @@ def handle_modal_submission(ack, body, client, logger):
     }
     try:
         new_issue = jira_client.create_issue(fields=issue_dict)
-        # Handle success (e.g., log the issue creation, inform the user, etc.)
+        
+        # Getting the URL of the created Jira issue
+        jira_issue_url = new_issue.permalink()
+
+        # Post the summary message to the same channel where the command was issued with the hyperlink to the Jira issue.
+        try:
+            client.chat_postMessage(
+                channel=channel_id,  # Use the captured channel ID
+                text=f"Thank you for submitting your request! We'll get back to you as soon as possible. Here is your *Jira ticket*: <{jira_issue_url}|{new_issue.key}.> \n\n*User*: <@{user_id}>\n*Request*: {request_text}\n*Urgency*: {urgency}\n*Business Impact*: {business_impact}"
+            )
+        # Handle success (e.g., log the issue creation, inform the user, etc.
+        except SlackApiError as e:
+            logger.error(f"Error posting message: {e}")
     except JIRAError as e:
         logger.error(f"Error creating Jira issue: {e}")
         # Handle the error (e.g., send a message back to the user)   
+
+    
 
 # Start the app in Socket Mode
 if __name__ == "__main__":
