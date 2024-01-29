@@ -4,11 +4,10 @@ from unittest.mock import patch, Mock
 import responses
 
 # Import the file/module that you want to test
-from app import app
+from ./app import app
+
 
 class TestSlackApp(unittest.TestCase):
-
-
     @responses.activate
     def test_handle_command(self):
         # Mock the environment variables that your app needs
