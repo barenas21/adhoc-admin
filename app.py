@@ -162,7 +162,7 @@ def handle_modal_submission(ack, body, client, logger):
 
     # Create a Jira issue
     issue_dict = {
-        'project': {'key': 'SAK'},
+        'project': {'key': os.environ.get("JIRA_PROJECT")},
         'summary': request_text,
         # 'reporter': {'name': jira_username}, #TODO: need to test this in Virta workspace to see if it works
         'priority': {'name': jira_priority},
