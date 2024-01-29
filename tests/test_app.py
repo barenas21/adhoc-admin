@@ -4,7 +4,7 @@ from unittest.mock import patch, Mock
 import responses
 
 # Import the file/module that you want to test
-from ./app import app
+from app import app
 
 
 class TestSlackApp(unittest.TestCase):
