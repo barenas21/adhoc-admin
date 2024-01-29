@@ -189,7 +189,7 @@ def handle_modal_submission(ack, body, client, logger):
             logger.error(f"Error posting message: {e}")
     except JIRAError as e:
         logger.error(f"Error creating Jira issue: {e}")
-        # Handle the error (e.g., send a message back to the user)   
+        # Handle the error (e.g., send a message back to the user)
 
 
 # Start the app in Socket Mode
