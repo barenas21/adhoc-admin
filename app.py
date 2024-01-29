@@ -156,7 +156,7 @@ def handle_modal_submission(ack, body, client, logger):
     try:
         client.chat_postMessage(
             channel=channel_id,  # Use the captured channel ID
-            text=f"*Request ID*: {request_id}\n*User*: <@{user_id}>\n*Request*: {request_text}\n*Urgency*: {urgency}\n*Business Impact*: {business_impact}"
+            text=f"Thank you for submitting your request! We'll get back to you as soon as possible. Your Request ID is {request_id}. \n\n*User*: <@{user_id}>\n*Request*: {request_text}\n*Urgency*: {urgency}\n*Business Impact*: {business_impact}"
         )
     except SlackApiError as e:
         logger.error(f"Error posting message: {e}")
@@ -164,13 +164,14 @@ def handle_modal_submission(ack, body, client, logger):
     # Create a Jira issue
     issue_dict = {
         'project': {'key': 'SAK'},
-        'summary': f"New Request from Slack: {request_text}",
+        'summary': request_text,
         # 'reporter': {'name': jira_username}, #TODO: need to test this in Virta workspace to see if it works
         'priority': {'name': jira_priority},
         'customfield_10032': {'value': urgency} if urgency else None,
         'customfield_10033': business_impact,
         'customfield_10036': request_id,
         'issuetype': {'name': 'Task'},
+        'labels': ['adhoc'],
     }
     try:
         new_issue = jira_client.create_issue(fields=issue_dict)
