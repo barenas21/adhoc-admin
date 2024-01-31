@@ -1,9 +1,9 @@
 import os
+from dotenv import load_dotenv
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk import WebClient  # Import WebClient here
 from slack_sdk.errors import SlackApiError
-from dotenv import load_dotenv
 from jira import JIRA, JIRAError
 from jira.resources import Issue
 
