@@ -8,6 +8,12 @@ This is a repo for the adhoc-admin app that will help engineers properly queue u
 
 # steps
 
+## set up virtualenv
+- Install virtualenv
+- Initialize your directory with 'virtualenv venz'
+- source venv/bin/activate
+- Run 'pip install -r requirement.txt'
+
 ## set up Slack app
 - Create a new Slack app
 - Enable Socket Mode
